@@ -82,6 +82,7 @@ jobs:
 
             make ARCH=loongarch CROSS_COMPILE=loongarch64-linux-gnu- \
               KDEB_PKGVERSION="$lv$pv$xv-$rv~$dv.g$git" \
+              DPKG_FLAGS="-d" \
               bindeb-pkg -j$(nproc)
             popd
 
