@@ -85,8 +85,8 @@ jobs:
             git config --global user.name "Github Actions"
             git config --global user.email "actions@noreply.github.com"
 
-            make ARCH=loongarch CROSS_COMPILE=loongarch64-linux-gnu- \
-              KCFLAGS="-Wno-error=misleading-indentation -Wno-error=unused-but-set-variable -Wno-error=unused-function" \
+           make ARCH=loongarch CROSS_COMPILE=loongarch64-linux-gnu- \
+              KCFLAGS="-Wno-error=misleading-indentation -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=unused-function" \
               KDEB_PKGVERSION="$lv$pv$xv-$rv~$dv.g$git" \
               DPKG_FLAGS="-d" \
               bindeb-pkg -j$(nproc)
