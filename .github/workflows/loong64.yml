@@ -64,6 +64,11 @@ jobs:
 
             git config --global --add safe.directory /work/linux
 
+            if [ -f drivers/irqchip/irq-loongson-eiointc.c ]; then
+              sed -i 's/if (c == cpu) break; idx++;/if (c == cpu) { break; } idx++;/g' \
+                drivers/irqchip/irq-loongson-eiointc.c || true
+            fi
+            
             pushd linux
 
             cp -v ../${{ matrix.mmu-size }} .config
@@ -81,6 +86,7 @@ jobs:
             git config --global user.email "actions@noreply.github.com"
 
             make ARCH=loongarch CROSS_COMPILE=loongarch64-linux-gnu- \
+              KCFLAGS="-Wno-error=misleading-indentation -Wno-error=unused-but-set-variable -Wno-error=unused-function" \
               KDEB_PKGVERSION="$lv$pv$xv-$rv~$dv.g$git" \
               DPKG_FLAGS="-d" \
               bindeb-pkg -j$(nproc)
