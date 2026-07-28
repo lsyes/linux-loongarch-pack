@@ -1,14 +1,13 @@
-
 name: Build loong64 kernel for Debian
 
 permissions: write-all
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
+ push:
+    branches: [ "main", "stable-7.1.5" ]
+ pull_request:
+    branches: [ "main", "stable-7.1.5" ]
+ workflow_dispatch:
 jobs:
   debian:
     strategy:
