@@ -1,4 +1,3 @@
-
 name: Build loong64 kernel for Debian
 
 permissions: write-all
