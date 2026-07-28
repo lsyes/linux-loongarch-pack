@@ -1,12 +1,13 @@
+
 name: Build loong64 kernel for Debian
 
 permissions: write-all
 
 on:
   push:
-    branches: [ "main", "stable-7.1.5" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "stable-7.1.5" ]
+    branches: [ "main" ]
   workflow_dispatch:
 jobs:
   debian:
@@ -52,44 +53,38 @@ jobs:
             set -euxo pipefail
             cd /work
             export DEBIAN_FRONTEND=noninteractive
-
-            apt update
-            apt install -y --no-install-recommends \
-              build-essential bc kmod cpio flex bison debhelper rsync \
-              sudo systemd zstd libdw-dev gawk devscripts equivs git xz-utils fakeroot wget curl \
-              libncurses-dev libelf-dev libssl-dev dwarves \
-              gcc-loongarch64-linux-gnu g++-loongarch64-linux-gnu
-
+            apt-get update
+            apt-get install -y sudo systemd zstd libdw-dev gawk devscripts equivs git xz-utils fakeroot wget curl build-essential bc kmod cpio flex libncurses5-dev libelf-dev libssl-dev python3 dwarves bison debhelper rsync --no-install-recommends
             git config --global --add safe.directory /work/linux
 
-            if [ -f drivers/irqchip/irq-loongson-eiointc.c ]; then
-              sed -i 's/if (c == cpu) break; idx++;/if (c == cpu) { break; } idx++;/g' \
-                drivers/irqchip/irq-loongson-eiointc.c || true
-            fi
-            
+            # loong64
+            echo "deb [signed-by=/usr/share/keyrings/debian-trixie-loong64.gpg arch=loong64] https://loong13.debian.net/debian-loong64 trixie main contrib non-free non-free-firmware" | sudo tee -a  /etc/apt/sources.list.d/debian-trixie-loong64.list
+            echo "deb [signed-by=/usr/share/keyrings/debian-trixie-loong64.gpg arch=loong64] http://loong13.debian.net/debian-loong64-security/ trixie-security main contrib non-free non-free-firmware" | sudo tee -a  /etc/apt/sources.list.d/debian-trixie-security-loong64.list
+            dpkg --add-architecture loong64
+            wget -O /usr/share/keyrings/debian-trixie-loong64.gpg https://loong13.debian.net/keyrings/debian-trixie-loong64.gpg
+            apt-get update
+            apt-get install -y gcc-loongarch64-linux-gnu libc6:loong64 libssl-dev:loong64 libelf-dev:loong64 libdw-dev:loong64 --no-install-recommends
+
+            # Prepare env
             pushd linux
 
+            # Build deb
+            # mv -v arch/loongarch/configs/deepin_loongarch_desktop_defconfig arch/loongarch/configs/deepin_loongarch_desktop_defconfig.old
+            # cp -v ../${{ matrix.mmu-size }} arch/loongarch/configs/deepin_loongarch_desktop_defconfig
+            # make ARCH=loongarch CROSS_COMPILE=loongarch64-linux-gnu- deepin_loongarch_desktop_defconfig
             cp -v ../${{ matrix.mmu-size }} .config
             export KCONFIG_CONFIG=$(realpath ./.config)            
-            make ARCH=loongarch CROSS_COMPILE=loongarch64-linux-gnu- olddefconfig
-
-            export lv=$(make -s ARCH=loongarch CROSS_COMPILE=loongarch64-linux-gnu- kernelversion)
+            export lv=$(make -s kernelversion)
             export xv=""
             export rv=0
             export git=$(git rev-parse --short=7 HEAD)
             export dv=$(git show -s --date=format:'%Y%m%d' --format=%cd)
-            pvcmd="cat .config | grep 'LOCALVERSION='" && export pv=$(eval $pvcmd | cut -d'"' -f2 || true)
+            pvcmd="cat .config | grep 'LOCALVERSION='" && export pv=$(eval $pvcmd | cut -d'"' -f2)
 
-            git config --global user.name "Github Actions"
-            git config --global user.email "actions@noreply.github.com"
-
-            make ARCH=loongarch CROSS_COMPILE=loongarch64-linux-gnu- \
-              KCFLAGS="-Wno-error=misleading-indentation -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=unused-function" \
-              KDEB_PKGVERSION="$lv$pv$xv-$rv~$dv.g$git" \
-              DPKG_FLAGS="-d" \
-              bindeb-pkg -j$(nproc)
+            make ARCH=loongarch HOSTCC=loongarch64-linux-gnu-gcc HOSTLD=loongarch64-linux-gnu-ld CROSS_COMPILE=loongarch64-linux-gnu- KDEB_PKGVERSION="$lv$pv$xv-$rv~$dv.g$git" bindeb-pkg -j$(nproc)
             popd
 
+            # Prepare artifact
             mkdir -p assets/ && mv ./*.deb assets/
 
       - name: Artifact
