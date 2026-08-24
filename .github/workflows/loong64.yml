@@ -4,9 +4,9 @@ permissions: write-all
 
 on:
  push:
-    branches: [ "main", "stable-7.1.5" ]
+    branches: [ "main", "stable-7.1.5" , "stable-7.1.7"]
  pull_request:
-    branches: [ "main", "stable-7.1.5" ]
+    branches: [ "main", "stable-7.1.5", "stable-7.1.7" ]
  workflow_dispatch:
 jobs:
   debian:
