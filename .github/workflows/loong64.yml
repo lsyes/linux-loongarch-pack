@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: AOSC-Tracking/linux
-          ref: 9187257f0050a983a87a3d258da7c9f6ba54e36a
+          ref: 105ae482bc1db08f4e784a91bfd1e81e611a385b
           fetch-depth: 1
           submodules: recursive 
           path: 'linux'
