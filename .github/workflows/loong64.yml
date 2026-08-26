@@ -5,9 +5,9 @@ permissions: write-all
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "stable-7.1.x"]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "stable-7.1.x" ]
   workflow_dispatch:
 jobs:
   debian:
@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: AOSC-Tracking/linux
-          ref: c042d56d9917f47155d38df1696a593602e3b3b0  # aosc/v7.1.5
+          ref:  a06776e668fdc69c5a8ff66148757ce3310768b7 # aosc/v7.1.9
           fetch-depth: 1
           submodules: recursive 
           path: 'linux'
